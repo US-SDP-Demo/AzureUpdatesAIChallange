@@ -21,7 +21,10 @@ namespace SimpleFeedReader
         {
             services.AddScoped<NewsService>();
             services.AddAutoMapper();
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+            services.AddMvc(options =>
+            {
+                options.EnableEndpointRouting = false;
+            });
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
