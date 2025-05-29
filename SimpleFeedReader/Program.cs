@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 
 namespace SimpleFeedReader
 {
@@ -12,6 +14,15 @@ namespace SimpleFeedReader
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
+                .ConfigureAppConfiguration((hostingContext, config) =>
+                {
+                    // Only add user secrets in development
+                    var env = hostingContext.HostingEnvironment;
+                    if (env.IsDevelopment())
+                    {
+                        config.AddUserSecrets<Program>();
+                    }
+                })
                 .UseStartup<Startup>();
     }
 }
