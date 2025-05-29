@@ -1,0 +1,53 @@
+{
+    "name": "Simple Feed Reader - .NET 9.0",
+    "image": "mcr.microsoft.com/devcontainers/dotnet:1-9.0-bookworm",
+    "features": {
+        "ghcr.io/devcontainers/features/node:1": {
+            "version": "lts"
+        },
+        "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+        "ghcr.io/devcontainers/features/git:1": {
+            "ppa": true,
+            "version": "latest"
+        }
+    },
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-dotnettools.csharp",
+                "ms-dotnettools.vscode-dotnet-runtime",
+                "ms-dotnettools.csdevkit",
+                "ms-vscode.vscode-json",
+                "formulahendry.auto-rename-tag",
+                "bradlc.vscode-tailwindcss",
+                "ms-azuretools.vscode-docker",
+                "GitHub.vscode-github-actions",
+                "ms-azuretools.azure-dev"
+            ],
+            "settings": {
+                "dotnet.completion.showCompletionItemsFromUnimportedNamespaces": true,
+                "dotnet.server.useOmnisharp": false,
+                "files.exclude": {
+                    "**/bin": true,
+                    "**/obj": true
+                }
+            }
+        }
+    },
+    "forwardPorts": [5000, 5001],
+    "portsAttributes": {
+        "5000": {
+            "label": "HTTP",
+            "onAutoForward": "notify"
+        },
+        "5001": {
+            "label": "HTTPS",
+            "onAutoForward": "notify"
+        }
+    },
+    "postCreateCommand": "dotnet restore && dotnet build",
+    "remoteUser": "vscode",
+    "hostRequirements": {
+        "memory": "4gb"
+    }
+}
