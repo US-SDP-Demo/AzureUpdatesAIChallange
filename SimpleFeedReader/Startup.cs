@@ -15,11 +15,11 @@ namespace SimpleFeedReader
             Configuration = configuration;
         }
 
-        public IConfiguration Configuration { get; }
-
-        public void ConfigureServices(IServiceCollection services)
+        public IConfiguration Configuration { get; }        public void ConfigureServices(IServiceCollection services)
         {
             services.AddScoped<NewsService>();
+            services.AddHttpClient<ChatService>();
+            services.AddScoped<ChatService>();
             services.AddAutoMapper();
             services.AddMvc(options =>
             {
@@ -36,10 +36,13 @@ namespace SimpleFeedReader
             else
             {
                 app.UseExceptionHandler("/Error");
-            }
-
-            app.UseStaticFiles();
-            app.UseMvc();
+            }            app.UseStaticFiles();
+            app.UseMvc(routes =>
+            {
+                routes.MapRoute(
+                    name: "default",
+                    template: "{controller=Home}/{action=Index}/{id?}");
+            });
         }
     }
 }
