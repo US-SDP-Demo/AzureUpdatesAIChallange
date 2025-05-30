@@ -9,5 +9,9 @@ namespace SimpleFeedReader.ViewModels
         public string Title { get; set; }
 
         public string Uri { get; set; }
+
+        public string Summary { get; set; }
+
+        public string FeedTitle { get; set; }
     }
 }

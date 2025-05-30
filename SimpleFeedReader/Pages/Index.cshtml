@@ -5,50 +5,136 @@
 }
 <h2>Simple Feed Reader</h2>
 <hr />
-<div class="row">
-    <div>
-        <form method="get">
-            <div class="form-group">
-                <label>
-                    Enter a feed URL:
-                    <input name="FeedUrl" id="FeedUrl" class="form-control" value="@Request.Query["feedurl"]" />
-                </label>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Retrieve Feed" class="btn btn-default" />
-            </div>
-        </form>
-    </div>
-    
-    @if (!string.IsNullOrEmpty(Model.ErrorText))
-    {
-        <div>
-            <h3 class="text-danger">@Model.ErrorText</h3>
-        </div>
-    }
 
-    @if (Model.NewsItems?.Count > 0)
-    {
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Title</th>
-                <th>Published</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in Model.NewsItems)
-            {
-                <tr>
-                    <td>
-                        <a href="@item.Uri" target="_blank">@item.Title</a>
-                    </td>
-                    <td>
-                        @item.Published.ToString("MMM dd, yyyy HH:mm:ss")
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
-    }
+<!-- Search Section -->
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h4>Search News Articles</h4>
+            </div>
+            <div class="card-body">
+                <form method="get">
+                    <div class="form-group">
+                        <label for="SearchQuery">Search for articles:</label>
+                        <input name="SearchQuery" id="SearchQuery" class="form-control" value="@Request.Query["SearchQuery"]" 
+                               placeholder="Enter keywords to search for..." />
+                    </div>
+                    <div class="form-group">
+                        <input type="submit" value="Search" class="btn btn-primary" />
+                        <a href="@Url.Page("/Index")" class="btn btn-secondary">Clear</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- RSS Feed Section -->
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h4>RSS Feed Reader</h4>
+            </div>
+            <div class="card-body">
+                <form method="get">
+                    <div class="form-group">
+                        <label for="FeedUrl">Enter a feed URL:</label>
+                        <input name="FeedUrl" id="FeedUrl" class="form-control" value="@Request.Query["feedurl"]" 
+                               placeholder="https://example.com/rss" />
+                    </div>
+                    <div class="form-group">
+                        <input type="submit" value="Retrieve Feed" class="btn btn-success" />
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div><!-- Results Section -->
+<div class="row mt-4">
+    <div class="col-md-12">
+        @if (!string.IsNullOrEmpty(Model.ErrorText))
+        {
+            <div class="alert alert-danger">
+                <h4>Error</h4>
+                <p>@Model.ErrorText</p>
+            </div>
+        }
+
+        @if (!string.IsNullOrEmpty(Request.Query["SearchQuery"]))
+        {
+            <div class="alert alert-info">
+                <h5>Search Results for: "@Request.Query["SearchQuery"]"</h5>
+                @if (Model.NewsItems?.Count > 0)
+                {
+                    <p>Found @Model.NewsItems.Count article(s)</p>
+                }
+                else
+                {
+                    <p>No articles found matching your search.</p>
+                }
+            </div>
+        }
+        else if (string.IsNullOrEmpty(Request.Query["FeedUrl"]) && Model.NewsItems?.Count > 0)
+        {
+            <div class="alert alert-info">
+                <h5>Latest News Articles</h5>
+                <p>Showing @Model.NewsItems.Count recent articles from the search index</p>
+            </div>
+        }
+
+        @if (Model.NewsItems?.Count > 0)
+        {
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>Title</th>
+                            <th>Description</th>
+                            <th>Published</th>
+                            <th>Source</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.NewsItems)
+                        {
+                            <tr>
+                                <td>
+                                    <a href="@item.Uri" target="_blank" class="text-decoration-none">
+                                        <strong>@item.Title</strong>
+                                    </a>
+                                </td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(item.Summary))
+                                    {
+                                        <span class="text-muted">
+                                            @(item.Summary.Length > 150 ? item.Summary.Substring(0, 150) + "..." : item.Summary)
+                                        </span>
+                                    }
+                                </td>
+                                <td>
+                                    <small class="text-muted">
+                                        @item.Published.ToString("MMM dd, yyyy HH:mm")
+                                    </small>
+                                </td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(item.FeedTitle))
+                                    {
+                                        <span class="badge badge-secondary">@item.FeedTitle</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else if (string.IsNullOrEmpty(Model.ErrorText) && !string.IsNullOrEmpty(Request.Query["FeedUrl"]))
+        {
+            <div class="alert alert-warning">
+                <p>No articles found in the feed.</p>
+            </div>
+        }
+    </div>
 </div>

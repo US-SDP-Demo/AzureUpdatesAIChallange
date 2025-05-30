@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
 using AutoMapper;
+using Microsoft.Extensions.Logging;
+using Moq;
 using SimpleFeedReader.Services;
 using SimpleFeedReader.ViewModels;
 using Xunit;
@@ -11,15 +13,17 @@ namespace SimpleFeedReader.Tests.Services
 {
     public class NewsServiceTests
     {
-        private readonly NewsService _newsService;
-
-        public NewsServiceTests()
+        private readonly NewsService _newsService;        public NewsServiceTests()
         {
             var mockMapper = new MapperConfiguration(cfg =>
                 cfg.AddProfile(new NewsStoryProfile()));
             IMapper mapper = mockMapper.CreateMapper();
 
-            _newsService = new NewsService(mapper);
+            // For unit tests, we don't need the actual SearchService functionality
+            // since these tests only verify RSS feed parsing
+            var mockLogger = new Mock<ILogger<NewsService>>();
+
+            _newsService = new NewsService(mapper, null, mockLogger.Object);
         }
 
         [Fact]
