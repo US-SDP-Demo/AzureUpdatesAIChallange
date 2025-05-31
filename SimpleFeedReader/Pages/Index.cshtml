@@ -3,6 +3,9 @@
 @{
     ViewData["Title"] = "Home page";
 }
+
+@Html.AntiForgeryToken()
+
 <h2>Simple Feed Reader</h2>
 <hr />
 
@@ -82,24 +85,36 @@
                 <h5>Latest News Articles</h5>
                 <p>Showing @Model.NewsItems.Count recent articles from the search index</p>
             </div>
-        }
-
-        @if (Model.NewsItems?.Count > 0)
+        }        @if (Model.NewsItems?.Count > 0)
         {
+            <!-- Table Header with Actions -->
+            <div class="card mb-3">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Articles (@Model.NewsItems.Count items)</h5>
+                    <button type="button" id="loadToAiSearch" class="btn btn-primary">
+                        <i class="fas fa-upload me-2"></i>Load to AI Search
+                    </button>
+                </div>
+            </div>
+            
             <div class="table-responsive">
-                <table class="table table-striped">
-                    <thead class="thead-dark">
+                <table class="table table-striped">                    <thead class="thead-dark">
                         <tr>
+                            <th width="50">
+                                <input type="checkbox" id="selectAll" class="form-check-input" title="Select All">
+                            </th>
                             <th>Title</th>
                             <th>Description</th>
                             <th>Published</th>
                             <th>Source</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        @foreach (var item in Model.NewsItems)
+                    <tbody>                        @foreach (var item in Model.NewsItems)
                         {
                             <tr>
+                                <td class="text-center">
+                                    <input type="checkbox" class="form-check-input article-checkbox" value="@item.Uri" name="selectedArticles">
+                                </td>
                                 <td>
                                     <a href="@item.Uri" target="_blank" class="text-decoration-none">
                                         <strong>@item.Title</strong>
@@ -134,7 +149,95 @@
         {
             <div class="alert alert-warning">
                 <p>No articles found in the feed.</p>
-            </div>
-        }
+            </div>        }
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const selectAllCheckbox = document.getElementById('selectAll');
+    const articleCheckboxes = document.querySelectorAll('.article-checkbox');
+    const loadToAiSearchBtn = document.getElementById('loadToAiSearch');
+    
+    // Handle "Select All" checkbox
+    if (selectAllCheckbox) {
+        selectAllCheckbox.addEventListener('change', function() {
+            articleCheckboxes.forEach(checkbox => {
+                checkbox.checked = this.checked;
+            });
+        });
+    }
+    
+    // Update "Select All" state when individual checkboxes change
+    articleCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const checkedCount = document.querySelectorAll('.article-checkbox:checked').length;
+            const totalCount = articleCheckboxes.length;
+            
+            if (checkedCount === 0) {
+                selectAllCheckbox.checked = false;
+                selectAllCheckbox.indeterminate = false;
+            } else if (checkedCount === totalCount) {
+                selectAllCheckbox.checked = true;
+                selectAllCheckbox.indeterminate = false;
+            } else {
+                selectAllCheckbox.checked = false;
+                selectAllCheckbox.indeterminate = true;
+            }
+        });
+    });
+      // Handle "Load to AI Search" button
+    if (loadToAiSearchBtn) {
+        loadToAiSearchBtn.addEventListener('click', function() {
+            const checkedBoxes = document.querySelectorAll('.article-checkbox:checked');
+            const selectedUrls = Array.from(checkedBoxes).map(checkbox => checkbox.value);
+            
+            if (selectedUrls.length === 0) {
+                alert('Please select at least one article to load to AI Search.');
+                return;
+            }
+            
+            // Disable button and show loading state
+            this.disabled = true;
+            this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Loading...';              // Make AJAX call to MVC controller
+            fetch('/Home/LoadToAiSearch', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ selectedUrls: selectedUrls })
+            })
+            .then(response => {
+                console.log('Response status:', response.status);
+                console.log('Response headers:', response.headers);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Success data:', data);
+                if (data.success) {
+                    alert(`Successfully loaded ${selectedUrls.length} article(s) to AI Search!`);
+                    
+                    // Optionally uncheck all boxes after successful loading
+                    articleCheckboxes.forEach(checkbox => checkbox.checked = false);
+                    selectAllCheckbox.checked = false;
+                    selectAllCheckbox.indeterminate = false;
+                } else {
+                    alert('Error loading articles to AI Search: ' + (data.message || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                console.error('Error details:', error);
+                alert('Error loading articles to AI Search: ' + error.message);
+            })
+            .finally(() => {
+                // Reset button state
+                this.disabled = false;
+                this.innerHTML = '<i class="fas fa-upload me-2"></i>Load to AI Search';
+            });
+        });
+    }
+});
+</script>
