@@ -26,33 +26,33 @@ namespace SimpleFeedReader.Pages
 
         public string ErrorText { get; private set; }
 
-        public List<NewsStoryViewModel> NewsItems { get; private set; }
-
-        public async Task OnGet()
+        public List<NewsStoryViewModel> NewsItems { get; private set; }        public async Task OnGet()
         {
-            // Initialize the search index
-            await _searchService.InitializeIndexAsync();
-
             string feedUrl = Request.Query["feedurl"];
-            string searchQuery = Request.Query["search"];            // If there's a search query, search the indexed content
-            if (!string.IsNullOrEmpty(searchQuery))
+            string searchQuery = Request.Query["search"];
+
+            // Only initialize search if Azure Search is configured and there's a search query
+            if (!string.IsNullOrEmpty(searchQuery) && _searchService != null)
             {
                 try
                 {
-                    var searchResults = await _searchService.SearchNewsAsync(searchQuery);
-                    if (searchResults != null)
+                    // Initialize the search index only when needed
+                    var isInitialized = await _searchService.InitializeIndexAsync();
+                    if (isInitialized)
                     {
-                        NewsItems = new List<NewsStoryViewModel>();
-                        foreach (var result in searchResults.GetResults())
+                        var searchResults = await _searchService.SearchNewsAsync(searchQuery);
+                        if (searchResults != null)
                         {
-                            NewsItems.Add(new NewsStoryViewModel
+                            NewsItems = new List<NewsStoryViewModel>();
+                            foreach (var result in searchResults.GetResults())
                             {
-                                Title = result.Document.GetString("title") ?? "",
-                                Uri = result.Document.GetString("uri") ?? "",
-                                Published = result.Document.GetDateTimeOffset("published") ?? DateTimeOffset.MinValue,
-                                Summary = result.Document.GetString("summary") ?? "",
-                                FeedTitle = result.Document.GetString("feedTitle") ?? ""
-                            });
+                                NewsItems.Add(new NewsStoryViewModel
+                                {                                    Title = result.Document.GetString("title") ?? "",
+                                    Uri = result.Document.GetString("uri") ?? "",
+                                    Published = result.Document.GetDateTimeOffset("published") ?? DateTimeOffset.MinValue,
+                                Summary = result.Document.GetString("summary") ?? "",                                    FeedTitle = result.Document.GetString("feedTitle") ?? ""
+                                });
+                            }
                         }
                         _logger.LogInformation($"Search for '{searchQuery}' returned {NewsItems.Count} results.");
                     }

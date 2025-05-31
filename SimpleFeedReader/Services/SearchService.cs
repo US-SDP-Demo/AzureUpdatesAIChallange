@@ -20,8 +20,7 @@ namespace SimpleFeedReader.Services
         private readonly SearchIndexClient _indexClient;
         private readonly ILogger<SearchService> _logger;
         private readonly string _indexName;
-        
-        public SearchService(IConfiguration configuration, ILogger<SearchService> logger)
+          public SearchService(IConfiguration configuration, ILogger<SearchService> logger)
         {
             _logger = logger;
             _indexName = configuration["AzureSearchIndexName"] ?? "rss-feeds";
@@ -31,7 +30,14 @@ namespace SimpleFeedReader.Services
 
             if (string.IsNullOrEmpty(searchEndpoint))
             {
-                _logger.LogWarning("Azure Search endpoint is missing. Search functionality will be disabled.");
+                _logger.LogInformation("Azure Search endpoint is missing. Search functionality will be disabled.");
+                return;
+            }
+
+            // Validate URI format before creating Uri objects
+            if (!Uri.TryCreate(searchEndpoint, UriKind.Absolute, out var endpointUri))
+            {
+                _logger.LogWarning("Invalid Azure Search endpoint format: {Endpoint}. Search functionality will be disabled.", searchEndpoint);
                 return;
             }
 
@@ -39,24 +45,22 @@ namespace SimpleFeedReader.Services
             if (!string.IsNullOrEmpty(searchApiKey))
             {
                 var credential = new AzureKeyCredential(searchApiKey);
-                _indexClient = new SearchIndexClient(new Uri(searchEndpoint), credential);
-                _searchClient = new SearchClient(new Uri(searchEndpoint), _indexName, credential);
+                _indexClient = new SearchIndexClient(endpointUri, credential);
+                _searchClient = new SearchClient(endpointUri, _indexName, credential);
                 _logger.LogInformation("Initialized Azure Search with API key authentication");
             }
             else
             {
                 var credential = new DefaultAzureCredential();
-                _indexClient = new SearchIndexClient(new Uri(searchEndpoint), credential);
-                _searchClient = new SearchClient(new Uri(searchEndpoint), _indexName, credential);
+                _indexClient = new SearchIndexClient(endpointUri, credential);
+                _searchClient = new SearchClient(endpointUri, _indexName, credential);
                 _logger.LogInformation("Initialized Azure Search with managed identity authentication");
             }
-        }
-
-        public async Task<bool> InitializeIndexAsync()
+        }public async Task<bool> InitializeIndexAsync()
         {
             if (_indexClient == null)
             {
-                _logger.LogWarning("Search client not initialized. Skipping index creation.");
+                _logger.LogInformation("Azure Search is not configured. Skipping index initialization.");
                 return false;
             }
 

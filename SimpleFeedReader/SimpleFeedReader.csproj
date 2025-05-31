@@ -2,7 +2,11 @@
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
     <UserSecretsId>b2b9bf9d-d2ed-438d-8fe6-3f9f57bb4440</UserSecretsId>
-  </PropertyGroup>  <ItemGroup>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <StaticWebAssetProjectMode>Disabled</StaticWebAssetProjectMode>
+  </PropertyGroup>  
+  <ItemGroup>
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
     <!-- Remove the Microsoft.AspNetCore.App reference with version 2.1.2 -->
     <PackageReference Include="Microsoft.SemanticKernel" Version="1.54.0" />
