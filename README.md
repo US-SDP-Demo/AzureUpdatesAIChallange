@@ -2,6 +2,35 @@
 
 A modern RSS feed reader application built with .NET 9.0, featuring Azure Search integration and AI-powered chat capabilities.
 
+## Scenario, Goals, and Stretch Goals
+## Scenario
+🚀 Azure Update Explorer: Unleash the Power of AI Search & Generative Chat!
+ 
+Congrats! You’ve kicked off your Azure Updates implementation and already have RSS feeds humming and data flowing in. But now… the real adventure begins!
+
+The Challenge:
+You have a treasure trove of Azure updates from the last 3 months, and you've started vectorizing and storing them for smarter search. But imagine if you could chat with your data, get lightning-fast summaries, context-rich insights, and even prioritize what matters most to YOU—all supercharged by modern AI! Utilize the Azure rss for your data. [RSS Feed](https://www.microsoft.com/releasecommunications/api/v2/azure/rss)
+ 
+
+### Goals
+1. Ingest and Vectorize Recent Updates:
+  Develop a pipeline that retrieves Azure Updates from the Azure Updates RSS feeds for the last 3 months. Ensure each update is ingested, processed, and vectorized for advanced search capabilities.  
+2. Automated Content Summarization and Tagging:  
+Leverage AI to automatically extract summaries from each update, assign resource tags (e.g., service names, categories), and enrich each entry with additional context using Bing Grounding agent and Semantic Kernel.  
+3. Contextual Enhancement for Search:  
+Use Semantic Kernel and Bing Grounding agent to augment each vectorized item with contextual information (such as links to documentation, impact analysis, release notes) to improve the quality and relevance of user search results.  
+4. Centralized Vector Store:  
+Store the processed and enriched update records in an AI Search-compatible vector database to serve as the backbone for semantic search for end-users.  
+5. Cost Calculator Integration:  
+Build an MCP-based tool server that extracts relevant data from the Azure Retail Prices API. Integrate this cost and resource information to assist users in refining and contextualizing their searches (e.g., by cost impact, available SKUs, regional pricing).
+ 
+
+## Stretch Goals
+1. Priority-Based Update Schema:  
+Design and implement a prioritization schema that allows classification of updates by importance to specific customer interests. For example, assign higher priority to updates for AKS (Azure Kubernetes Service), ACA (App Container Apps), and containers if these are mission-critical. Security-related updates can also be tagged as ‘high priority’ for customers focusing on compliance and risk reduction.   
+2. ACR Impact and Downtime Evaluation:  
+Extend update processing to evaluate the impact of changes, especially as it relates to Azure Container Registry (ACR). This includes potential downtime, migration requirements, and operational risks. Summarize and flag updates that might affect service availability or require customer action.
+
 ## Features
 
 - **RSS Feed Reading**: Retrieve and display RSS feeds from any valid feed URL
