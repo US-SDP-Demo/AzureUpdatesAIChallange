@@ -3,22 +3,21 @@
 A modern RSS feed reader application built with .NET 9.0, featuring Azure Search integration and AI-powered chat capabilities.
 
 ## Scenario, Goals, and Stretch Goals
-## Scenario
+### Scenario
 🚀 Azure Update Explorer: Unleash the Power of AI Search & Generative Chat!
  
-Congrats! You’ve kicked off your Azure Updates implementation and already have RSS feeds humming and data flowing in. But now… the real adventure begins!
+Congrats! You’ve kicked off your Azure Updates implementation and already have RSS feeds and data displaying on the web. But now… the real adventure begins!
 
 The Challenge:
-You have a treasure trove of Azure updates from the last 3 months, and you've started vectorizing and storing them for smarter search. But imagine if you could chat with your data, get lightning-fast summaries, context-rich insights, and even prioritize what matters most to YOU—all supercharged by modern AI! Utilize the Azure rss for your data. [RSS Feed](https://www.microsoft.com/releasecommunications/api/v2/azure/rss)
+You have a treasure trove of Azure updates in the Azure Updates feed, and you need to start vectorizing and storing them for smarter search. Now imagine if you could chat with your data, get lightning-fast summaries, context-rich insights, and even prioritize what matters most to YOU—all supercharged by modern AI! Utilize the Azure rss feed for your data, vectorize the data, and Store it in AI Search. [RSS Feed](https://www.microsoft.com/releasecommunications/api/v2/azure/rss)
  
 
 ### Goals
 1. Ingest and Vectorize Recent Updates:
-  Develop a pipeline that retrieves Azure Updates from the Azure Updates RSS feeds for the last 3 months. Ensure each update is ingested, processed, and vectorized for advanced search capabilities.  
+  On the UI you have the ability to select one or many updates, but the load to AI Search has not been finished. Ensure each update is saved, processed, and vectorized for advanced search capabilities.  
 2. Automated Content Summarization and Tagging:  
-Leverage AI to automatically extract summaries from each update, assign resource tags (e.g., service names, categories), and enrich each entry with additional context using Bing Grounding agent and Semantic Kernel.  
-3. Contextual Enhancement for Search:  
-Use Semantic Kernel and Bing Grounding agent to augment each vectorized item with contextual information (such as links to documentation, impact analysis, release notes) to improve the quality and relevance of user search results.  
+Leverage AI to automatically extract summaries from each update, assign resource tags (e.g., service names, categories), and enrich each entry with additional context using another agent or even Bing Grounding.
+3. The example already has SemanticKernel and a chat interface so hook it all together.
 4. Centralized Vector Store:  
 Store the processed and enriched update records in an AI Search-compatible vector database to serve as the backbone for semantic search for end-users.  
 5. Cost Calculator Integration:  
