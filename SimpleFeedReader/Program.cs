@@ -1,8 +1,11 @@
-﻿using Microsoft.AspNetCore.Hosting;
+﻿#pragma warning disable SKEXP0070 // Azure AI Inference is experimental
+
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Connectors.AzureAIInference;
 using SimpleFeedReader.Services;
 using System.Reflection;
 using Azure.Identity;
@@ -69,35 +72,7 @@ namespace SimpleFeedReader
             //TODO: Register vector db and related kernel memory services.
             var kernelBuilder = Kernel.CreateBuilder();
 
-            // Check if we have an API key or should use managed identity
-            //TODO: Simplify
-            var openAiApiKey = configuration["AzureOpenAIApiKey"];
-            if (!string.IsNullOrEmpty(openAiApiKey))
-            {
-                //TODO: Change to Azure AI Inference
-                // Use API key for local development
-                kernelBuilder.Services.AddAzureOpenAIChatCompletion(
-                    deploymentName: configuration["AzureOpenAIDeploymentName"],
-                    endpoint: configuration["AzureOpenAIEndpoint"],
-                    apiKey: openAiApiKey
-                );
-            }
-            else
-            {
-                // Use managed identity for Azure deployment
-                var endpoint = configuration["AzureOpenAIEndpoint"];
-                var deploymentName = configuration["AzureOpenAIDeploymentName"];
-                
-                if (!string.IsNullOrEmpty(endpoint) && !string.IsNullOrEmpty(deploymentName))
-                {
-                    //TODO: Change to Azure AI Inference
-                    kernelBuilder.Services.AddAzureOpenAIChatCompletion(
-                        deploymentName: deploymentName,
-                        endpoint: endpoint,
-                        new DefaultAzureCredential()
-                    );
-                }
-            }
+            ConfigureKernelBuilder(kernelBuilder, configuration);
 
             services.AddScoped<NewsService>();
             services.AddScoped<SearchService>();
@@ -108,6 +83,36 @@ namespace SimpleFeedReader
             services.AddSingleton(kernelBuilder);
             services.AddRazorPages();
             services.AddControllers();
+        }
+
+        public static void ConfigureKernelBuilder(IKernelBuilder kernelBuilder, IConfiguration configuration)
+        {
+            // Simplified AI service configuration - only branch on authentication method
+            var apiKey = configuration["AzureOpenAIApiKey"] ?? configuration["GITHUB_TOKEN"];
+            var endpoint = configuration["AzureOpenAIEndpoint"];
+            var modelId = configuration["AzureOpenAIDeploymentName"];
+            
+            if (!string.IsNullOrEmpty(endpoint) && !string.IsNullOrEmpty(modelId))
+            {
+                if (!string.IsNullOrEmpty(apiKey))
+                {
+                    // Use API key (either explicit or GitHub token)
+                    kernelBuilder.AddAzureAIInferenceChatCompletion(
+                        modelId: modelId,
+                        apiKey: apiKey,
+                        endpoint: new Uri(endpoint)
+                    );
+                }
+                else
+                {
+                    // Use managed identity for Azure deployment
+                    kernelBuilder.AddAzureAIInferenceChatCompletion(
+                        modelId: modelId,
+                        credential: new DefaultAzureCredential(),
+                        endpoint: new Uri(endpoint)
+                    );
+                }
+            }
         }
 
         private static void Configure(WebApplication app, IWebHostEnvironment env)
