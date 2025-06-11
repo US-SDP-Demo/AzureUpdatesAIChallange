@@ -66,12 +66,15 @@ namespace SimpleFeedReader
 
         private static void ConfigureServices(IServiceCollection services, IConfiguration configuration)
         {
+            //TODO: Register vector db and related kernel memory services.
             var kernelBuilder = Kernel.CreateBuilder();
 
             // Check if we have an API key or should use managed identity
+            //TODO: Simplify
             var openAiApiKey = configuration["AzureOpenAIApiKey"];
             if (!string.IsNullOrEmpty(openAiApiKey))
             {
+                //TODO: Change to Azure AI Inference
                 // Use API key for local development
                 kernelBuilder.Services.AddAzureOpenAIChatCompletion(
                     deploymentName: configuration["AzureOpenAIDeploymentName"],
@@ -87,6 +90,7 @@ namespace SimpleFeedReader
                 
                 if (!string.IsNullOrEmpty(endpoint) && !string.IsNullOrEmpty(deploymentName))
                 {
+                    //TODO: Change to Azure AI Inference
                     kernelBuilder.Services.AddAzureOpenAIChatCompletion(
                         deploymentName: deploymentName,
                         endpoint: endpoint,
