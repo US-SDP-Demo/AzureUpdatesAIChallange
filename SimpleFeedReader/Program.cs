@@ -85,12 +85,17 @@ namespace SimpleFeedReader
             services.AddControllers();
         }
 
+        private const string AzureOpenAIApiKey = "AzureOpenAIApiKey";
+        private const string GitHubToken = "GITHUB_TOKEN";
+        private const string AzureOpenAIEndpoint = "AzureOpenAIEndpoint";
+        private const string AzureOpenAIDeploymentName = "AzureOpenAIDeploymentName";
+
         public static void ConfigureKernelBuilder(IKernelBuilder kernelBuilder, IConfiguration configuration)
         {
             // Simplified AI service configuration - only branch on authentication method
-            var apiKey = configuration["AzureOpenAIApiKey"] ?? configuration["GITHUB_TOKEN"];
-            var endpoint = configuration["AzureOpenAIEndpoint"];
-            var modelId = configuration["AzureOpenAIDeploymentName"];
+            var apiKey = configuration[AzureOpenAIApiKey] ?? configuration[GitHubToken];
+            var endpoint = configuration[AzureOpenAIEndpoint];
+            var modelId = configuration[AzureOpenAIDeploymentName];
             
             if (!string.IsNullOrEmpty(endpoint) && !string.IsNullOrEmpty(modelId))
             {
