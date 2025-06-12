@@ -36,6 +36,13 @@
 
 ---
 
+## RSS Plugin
+
+- Use System.ServiceModel.Syndication to process feed from https://www.microsoft.com/releasecommunications/api/v2/azure/rss
+
+
+---
+
 ## Content Processing and AI Enhancement Tasks
 
 ### Goal 2: Automated Content Summarization and Tagging
