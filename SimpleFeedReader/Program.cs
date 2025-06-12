@@ -1,14 +1,7 @@
-﻿using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.SemanticKernel;
+﻿using Microsoft.SemanticKernel;
 using SimpleFeedReader.Services;
 using System.Reflection;
 using Azure.Identity;
-using Microsoft.AspNetCore.Builder;
-using System;
-using System.IO;
 
 namespace SimpleFeedReader
 {
@@ -63,40 +56,38 @@ namespace SimpleFeedReader
                 throw;
             }
         }
-
+        private record InferenceOptions(
+            [property: ConfigurationKeyName("AzureOpenAIDeploymentName")]
+            string ModelId,
+            [property: ConfigurationKeyName("AzureOpenAIEndpoint")]
+            string Endpoint,
+            [property: ConfigurationKeyName("AzureOpenAIApiKey")]
+            string? ApiKey = null,
+            [property: ConfigurationKeyName("GITHUB_TOKEN")]
+            string? GithubToken = null);
         private static void ConfigureServices(IServiceCollection services, IConfiguration configuration)
         {
             //TODO: Register vector db and related kernel memory services.
             var kernelBuilder = Kernel.CreateBuilder();
-
-            // Check if we have an API key or should use managed identity
-            //TODO: Simplify
-            var openAiApiKey = configuration["AzureOpenAIApiKey"];
-            if (!string.IsNullOrEmpty(openAiApiKey))
+            var inferenceOptions = configuration.Get<InferenceOptions>()
+                ?? throw new InvalidOperationException("Inference options are not configured properly.");
+            var apiKey = inferenceOptions.ApiKey ?? inferenceOptions.GithubToken;
+            var modelId = inferenceOptions.ModelId;
+            Uri endpoint = new(inferenceOptions.Endpoint);
+            var kernelServices = kernelBuilder.Services;
+            if (string.IsNullOrEmpty(apiKey))
             {
-                //TODO: Change to Azure AI Inference
-                // Use API key for local development
-                kernelBuilder.Services.AddAzureOpenAIChatCompletion(
-                    deploymentName: configuration["AzureOpenAIDeploymentName"],
-                    endpoint: configuration["AzureOpenAIEndpoint"],
-                    apiKey: openAiApiKey
-                );
+                kernelServices.AddAzureAIInferenceChatClient(
+                    modelId: modelId,
+                    endpoint: endpoint,
+                    credential: new DefaultAzureCredential());
             }
             else
             {
-                // Use managed identity for Azure deployment
-                var endpoint = configuration["AzureOpenAIEndpoint"];
-                var deploymentName = configuration["AzureOpenAIDeploymentName"];
-                
-                if (!string.IsNullOrEmpty(endpoint) && !string.IsNullOrEmpty(deploymentName))
-                {
-                    //TODO: Change to Azure AI Inference
-                    kernelBuilder.Services.AddAzureOpenAIChatCompletion(
-                        deploymentName: deploymentName,
-                        endpoint: endpoint,
-                        new DefaultAzureCredential()
-                    );
-                }
+                kernelServices.AddAzureAIInferenceChatClient(
+                    modelId: modelId,
+                    endpoint: endpoint,
+                    apiKey: apiKey);
             }
 
             services.AddScoped<NewsService>();

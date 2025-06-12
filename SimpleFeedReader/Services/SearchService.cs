@@ -3,13 +3,7 @@ using Azure.Search.Documents;
 using Azure.Search.Documents.Indexes;
 using Azure.Search.Documents.Indexes.Models;
 using Azure.Search.Documents.Models;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using SimpleFeedReader.ViewModels;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Azure.Identity;
 
 namespace SimpleFeedReader.Services
@@ -20,7 +14,7 @@ namespace SimpleFeedReader.Services
         private readonly SearchIndexClient _indexClient;
         private readonly ILogger<SearchService> _logger;
         private readonly string _indexName;
-          public SearchService(IConfiguration configuration, ILogger<SearchService> logger)
+        public SearchService(IConfiguration configuration, ILogger<SearchService> logger)
         {
             _logger = logger;
             _indexName = configuration["AzureSearchIndexName"] ?? "rss-feeds";
@@ -31,14 +25,12 @@ namespace SimpleFeedReader.Services
             if (string.IsNullOrEmpty(searchEndpoint))
             {
                 _logger.LogInformation("Azure Search endpoint is missing. Search functionality will be disabled.");
-                return;
             }
 
             // Validate URI format before creating Uri objects
             if (!Uri.TryCreate(searchEndpoint, UriKind.Absolute, out var endpointUri))
             {
                 _logger.LogWarning("Invalid Azure Search endpoint format: {Endpoint}. Search functionality will be disabled.", searchEndpoint);
-                return;
             }
 
             // Use API key if available (for local development), otherwise use managed identity
@@ -56,7 +48,8 @@ namespace SimpleFeedReader.Services
                 _searchClient = new SearchClient(endpointUri, _indexName, credential);
                 _logger.LogInformation("Initialized Azure Search with managed identity authentication");
             }
-        }public async Task<bool> InitializeIndexAsync()
+        }
+        public async Task<bool> InitializeIndexAsync()
         {
             if (_indexClient == null)
             {
@@ -183,6 +176,8 @@ namespace SimpleFeedReader.Services
                 
                 return results.Value.GetResults().Select(result => new NewsStoryViewModel
                 {
+                    Summary = GenerateSummary(result.Document.GetString("title")),
+                    FeedTitle = result.Document.GetString("source"),
                     Title = result.Document.GetString("title"),
                     Uri = result.Document.GetString("uri"),
                     Published = result.Document.GetDateTimeOffset("published") ?? DateTimeOffset.MinValue
@@ -213,7 +208,7 @@ namespace SimpleFeedReader.Services
                 return title ?? string.Empty;
             }
 
-            return title.Substring(0, 97) + "...";
+            return string.Concat(title.AsSpan(0, 97), "...");
         }
     }
 
