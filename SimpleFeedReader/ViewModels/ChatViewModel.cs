@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-
 namespace SimpleFeedReader.ViewModels
 {
     public class ChatViewModel
@@ -10,7 +7,7 @@ namespace SimpleFeedReader.ViewModels
 
     public class ChatMessage
     {
-        public string Content { get; set; }
+        public required string Content { get; set; }
         public bool IsFromUser { get; set; }
         public DateTime Timestamp { get; set; } = DateTime.Now;
     }

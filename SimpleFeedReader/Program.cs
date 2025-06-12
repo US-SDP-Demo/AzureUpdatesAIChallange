@@ -9,9 +9,6 @@ using Microsoft.SemanticKernel.Connectors.AzureAIInference;
 using SimpleFeedReader.Services;
 using System.Reflection;
 using Azure.Identity;
-using Microsoft.AspNetCore.Builder;
-using System;
-using System.IO;
 
 namespace SimpleFeedReader
 {
@@ -66,14 +63,19 @@ namespace SimpleFeedReader
                 throw;
             }
         }
-
+        private record InferenceOptions(
+            [property: ConfigurationKeyName("AzureOpenAIDeploymentName")]
+            string ModelId,
+            [property: ConfigurationKeyName("AzureOpenAIEndpoint")]
+            string Endpoint,
+            [property: ConfigurationKeyName("AzureOpenAIApiKey")]
+            string? ApiKey = null,
+            [property: ConfigurationKeyName("GITHUB_TOKEN")]
+            string? GithubToken = null);
         private static void ConfigureServices(IServiceCollection services, IConfiguration configuration)
         {
             //TODO: Register vector db and related kernel memory services.
             var kernelBuilder = Kernel.CreateBuilder();
-
-            ConfigureKernelBuilder(kernelBuilder, configuration);
-
             services.AddScoped<NewsService>();
             services.AddScoped<SearchService>();
             services.AddHttpClient<ChatService>();
