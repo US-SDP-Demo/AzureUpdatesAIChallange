@@ -31,7 +31,7 @@ namespace SimpleFeedReader.Controllers
             try
             {
                 var response = await _chatService.SendMessageAsync(message);
-                return Json(new { success = true, response = response });
+                return Json(new { success = false, response = response });
             }
             catch (System.Exception ex)
             {
